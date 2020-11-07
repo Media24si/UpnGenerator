@@ -2,62 +2,319 @@
 
 namespace Media24si\UpnGenerator;
 
-class UpnGenerator {
+class UpnGenerator
+{
+    private string $payer_name;
+    private string $payer_address;
+    private string $payer_post;
 
+    private string $receiver_name;
+    private string $receiver_address;
+    private string $receiver_post;
+    private string $receiver_iban;
+    private string $reference;
 
-	public $payer_address = '';
+    private float $amount;
+    private string $code;
+    private string $purpose = '';
+    private \DateTime $due_date;
 
-	public $subject = '';
+    private const FONT = __DIR__ . '/courbd.ttf';
+    private const FONT_SIZE = 17;
+    private const FONT_SMALL = 15;
 
-	public $code = 'OTHR';
+    private $image;
+    private $color;
 
-	public $amount = '';
-	public $payment_date = '';
+    public function __construct()
+    {
+        $this->image = imagecreatefrompng(__DIR__ . '/upn_sl.png');
+        $this->color = imagecolorallocate($this->image, 0x00, 0x00, 0x00);
+    }
 
-	public $reference_prefix = '';
-	public $reference = '';
+    public function gdResource()
+    {
+        $this->writeText(697, 170, $this->payer_name ?? '');
+        $this->writeText(697, 201, $this->payer_address ?? '');
+        $this->writeText(697, 233, $this->payer_post ?? '');
 
-	public $receiver_address = '';
-	public $receiver_iban = '';
-	public $receiver_bic = '';
+        $this->writeText(30, 62, $this->payer_name ?? '', self::FONT_SMALL);
+        $this->writeText(30, 87, $this->payer_address ?? '', self::FONT_SMALL);
+        $this->writeText(30, 112, $this->payer_post ?? '', self::FONT_SMALL);
 
-	public function generate($output = false) {
-		$im = \ImageCreateFromJpeg(__DIR__ . '/upn-blank.jpg');
-        $black = imagecolorallocate($im, 0x00, 0x00, 0x00);
-        $font = __DIR__ . '/courier.ttf';
-        $angle = 0;
+        $this->writeText(418, 507, $this->receiver_name ?? '');
+        $this->writeText(418, 538, $this->receiver_address ?? '');
+        $this->writeText(418, 570, $this->receiver_post ?? '');
 
-        imagefttext($im, 9, $angle, 17, 97, $black, $font, $this->payer_address);
-        imagefttext($im, 12, $angle, 20, 144, $black, $font, $this->code);
-        imagefttext($im, 12, $angle, 90, 144, $black, $font, $this->subject);
+        $this->writeText(30, 405, $this->receiver_name ?? '', self::FONT_SMALL);
+        $this->writeText(30, 430, $this->receiver_address ?? '', self::FONT_SMALL);
+        $this->writeText(30, 455, $this->receiver_post ?? '', self::FONT_SMALL);
 
-        $dimensions = imagettfbbox(12, $angle, $font, $this->amount);
-        $textWidth = abs($dimensions[4] - $dimensions[0]);
-        $x = 212 - $textWidth;
-        imagefttext($im, 12, $angle, $x, 177, $black, $font, $this->amount);
+        $this->writeText(418, 400, $this->getFormatedReceiverIban() ?? '');
+        $this->writeText(30, 300, $this->getFormatedReceiverIban() ?? '', self::FONT_SMALL);
 
-        imagefttext($im, 12, $angle, 238, 177, $black, $font, $this->payment_date);
-        imagefttext($im, 12, $angle, 368, 177, $black, $font, $this->receiver_bic);
-        imagefttext($im, 12, $angle, 17, 210, $black, $font, $this->receiver_iban);
-        imagefttext($im, 12, $angle, 17, 244, $black, $font, $this->reference_prefix);
-        imagefttext($im, 12, $angle, 85, 244, $black, $font, $this->reference);
-        imagefttext($im, 9, $angle, 17, 276, $black, $font, $this->receiver_address);
+        $this->writeText(418, 451, $this->getReferencePrefix());
+        $this->writeText(528, 451, $this->getReferenceSuffix());
+        $this->writeText(30, 351, $this->getFormatedReference(), self::FONT_SMALL);
 
-        if (!$output) { // return string
-            ob_start();
-            imagejpeg($im);
-            $image = ob_get_contents();
-            ob_end_clean();
+        $this->writeText(528, 340, $this->purpose ?? '');
+        $this->writeText(30, 170, $this->purpose ?? '', self::FONT_SMALL);
 
-            imagedestroy($im);
+        $this->writeText(1155, 340, $this->due_date->format('d.m.Y'));
+        $this->writeText(30, 195, $this->due_date->format('d.m.Y'), self::FONT_SMALL);
 
-            return $image;
+        $this->writeText(110, 247, '***' . $this->getFormatedPrice(), self::FONT_SMALL);
+        $this->writeText(750, 285, '***' . $this->getFormatedPrice());
+
+        $this->writeText(418, 340, $this->code ?? '');
+
+        $qr = $this->getQRCode();
+        imagecopyresampled($this->image, $qr, 433, 60, 0, 0, 220, 220, imagesx($qr), imagesy($qr));
+
+        return $this->image;
+    }
+
+    public function render(): void
+    {
+        $image = $this->gdResource();
+
+        header('Content-Type: image/png');
+        imagepng($image);
+        imagedestroy($image);
+    }
+
+    public function png(): string
+    {
+        $image = $this->gdResource();
+
+        ob_start();
+        imagepng($image);
+        $img = ob_get_contents();
+        ob_end_clean();
+
+        imagedestroy($image);
+
+        return $img;
+    }
+
+    public function getQRCode()
+    {
+        $qrEncoder = \QR_Code\Encoder\Encoder::factory(QR_ECLEVEL_M, 3, 0);
+        $qrEncoder->version = 15;
+
+        $tab = $qrEncoder->encode($this->getQRCodeText());
+
+        return \QR_Code\Encoder\Image::image(
+            $tab,
+            min(max(1, 3), (int)(QR_PNG_MAXIMUM_SIZE / (count($tab)))),
+            0
+        );
+    }
+
+    public function getQRCodeText(): string
+    {
+        $text = [
+            'UPNQR',
+            '',
+            '    ',
+            '',
+            '',
+            $this->payer_name ?? '',
+            $this->payer_address ?? '',
+            $this->payer_post ?? '',
+            sprintf('%011d', $this->amount * 100) ?? '',
+            '',
+            '',
+            $this->code ?? '',
+            $this->purpose ?? '',
+            $this->due_date->format('d.m.Y') ?? '',
+            $this->receiver_iban ?? '',
+            $this->reference ?? '',
+            $this->receiver_name ?? '',
+            $this->receiver_address ?? '',
+            $this->receiver_post ?? '',
+        ];
+
+        array_walk($text, fn(&$i) => $i = trim($i));
+        $text = implode("\n", $text) . "\n";
+        $text .= mb_strlen($text) . "\n"; // append control code
+
+        return $text;
+    }
+
+    public function getFormatedPrice(): string
+    {
+        return number_format($this->amount, 2, ',', '.');
+    }
+
+    public function getFormatedReceiverIban(): string
+    {
+        return wordwrap($this->receiver_iban, 4, ' ', true);
+    }
+
+    public function getFormatedReference(): string
+    {
+        return $this->getReferencePrefix() . ' ' . $this->getReferenceSuffix();
+    }
+
+    public function getReferencePrefix(): string
+    {
+        return substr($this->reference, 0, 4);
+    }
+
+    public function getReferenceSuffix(): string
+    {
+        return substr($this->reference, 4);
+    }
+
+    private function writeText(int $x, int $y, $text, $fontSize = self::FONT_SIZE): void
+    {
+        if ($text) {
+            imagefttext($this->image, $fontSize, 0, $x, $y, $this->color, self::FONT, $text);
         }
+    }
 
-        // output the image
-        header('Content-Type: image/jpeg');
-        imagejpeg($im);
-        imagedestroy($im);
-	}
+    public function getPayerName(): string
+    {
+        return $this->payer_name;
+    }
 
+    public function setPayerName(string $payer_name): self
+    {
+        $this->payer_name = $payer_name;
+
+        return $this;
+    }
+
+    public function getPayerAddress(): string
+    {
+        return $this->payer_address;
+    }
+
+    public function setPayerAddress(string $payer_address): self
+    {
+        $this->payer_address = $payer_address;
+
+        return $this;
+    }
+
+    public function getPayerPost(): string
+    {
+        return $this->payer_post;
+    }
+
+    public function setPayerPost(string $payer_post): self
+    {
+        $this->payer_post = $payer_post;
+
+        return $this;
+    }
+
+    public function getReceiverName(): string
+    {
+        return $this->receiver_name;
+    }
+
+    public function setReceiverName(string $receiver_name): self
+    {
+        $this->receiver_name = $receiver_name;
+
+        return $this;
+    }
+
+    public function getReceiverAddress(): string
+    {
+        return $this->receiver_address;
+    }
+
+    public function setReceiverAddress(string $receiver_address): self
+    {
+        $this->receiver_address = $receiver_address;
+
+        return $this;
+    }
+
+    public function getReceiverPost(): string
+    {
+        return $this->receiver_post;
+    }
+
+    public function setReceiverPost(string $receiver_post): self
+    {
+        $this->receiver_post = $receiver_post;
+
+        return $this;
+    }
+
+    public function getReceiverIban(): string
+    {
+        return $this->receiver_iban;
+    }
+
+    public function setReceiverIban(string $receiver_iban): self
+    {
+        $this->receiver_iban = str_replace(' ', '', $receiver_iban);
+
+        return $this;
+    }
+
+    public function getReference(): string
+    {
+        return $this->reference;
+    }
+
+    public function setReference(string $reference): self
+    {
+        $this->reference = str_replace(' ', '', $reference);
+
+        return $this;
+    }
+
+    public function getAmount(): float
+    {
+        return $this->amount;
+    }
+
+    public function setAmount(float $amount): self
+    {
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = strtoupper($code);
+
+        return $this;
+    }
+
+    public function getPurpose(): string
+    {
+        return $this->purpose;
+    }
+
+    public function setPurpose(string $purpose): self
+    {
+        $this->purpose = $purpose;
+
+        return $this;
+    }
+
+    public function getDueDate(): \DateTime
+    {
+        return $this->due_date;
+    }
+
+    public function setDueDate(\DateTime $due_date): self
+    {
+        $this->due_date = $due_date;
+
+        return $this;
+    }
 }
