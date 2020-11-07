@@ -29,6 +29,11 @@ Get PNG as a string: `$upn->png();`
 
 Get GD Image resource: `$upn->gdResource();`
 
+Above example will output:
+
+![Upn Example](https://raw.githubusercontent.com/Media24si/UpnGenerator/master/example.png)
+
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
