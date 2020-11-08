@@ -2,6 +2,12 @@
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
+# Installation
+
+```bash
+composer require media24si/upn-generator
+```
+
 # Usage
 
 First generate UPN:

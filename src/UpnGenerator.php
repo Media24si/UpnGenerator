@@ -2,6 +2,8 @@
 
 namespace Media24si\UpnGenerator;
 
+use InvalidArgumentException;
+
 class UpnGenerator
 {
     private string $payer_name;
@@ -21,7 +23,7 @@ class UpnGenerator
 
     private const FONT = __DIR__ . '/courbd.ttf';
     private const FONT_SIZE = 17;
-    private const FONT_SMALL = 15;
+    private const FONT_SMALL = 11;
 
     private $image;
     private $color;
@@ -58,7 +60,7 @@ class UpnGenerator
         $this->writeText(30, 351, $this->getFormatedReference(), self::FONT_SMALL);
 
         $this->writeText(528, 340, $this->purpose ?? '');
-        $this->writeText(30, 170, $this->purpose ?? '', self::FONT_SMALL);
+        $this->writeText(30, 165, $this->purpose ?? '', 10);
 
         $this->writeText(1155, 340, $this->due_date->format('d.m.Y'));
         $this->writeText(30, 195, $this->due_date->format('d.m.Y'), self::FONT_SMALL);
@@ -181,7 +183,7 @@ class UpnGenerator
 
     public function setPayerName(string $payer_name): self
     {
-        $this->payer_name = $payer_name;
+        $this->payer_name = mb_substr($payer_name, 0, 33);
 
         return $this;
     }
@@ -193,7 +195,7 @@ class UpnGenerator
 
     public function setPayerAddress(string $payer_address): self
     {
-        $this->payer_address = $payer_address;
+        $this->payer_address = mb_substr($payer_address, 0, 33);
 
         return $this;
     }
@@ -205,7 +207,7 @@ class UpnGenerator
 
     public function setPayerPost(string $payer_post): self
     {
-        $this->payer_post = $payer_post;
+        $this->payer_post = mb_substr($payer_post, 0, 33);
 
         return $this;
     }
@@ -217,7 +219,7 @@ class UpnGenerator
 
     public function setReceiverName(string $receiver_name): self
     {
-        $this->receiver_name = $receiver_name;
+        $this->receiver_name = mb_substr($receiver_name, 0, 33);
 
         return $this;
     }
@@ -229,7 +231,7 @@ class UpnGenerator
 
     public function setReceiverAddress(string $receiver_address): self
     {
-        $this->receiver_address = $receiver_address;
+        $this->receiver_address = mb_substr($receiver_address, 0, 33);
 
         return $this;
     }
@@ -241,7 +243,7 @@ class UpnGenerator
 
     public function setReceiverPost(string $receiver_post): self
     {
-        $this->receiver_post = $receiver_post;
+        $this->receiver_post = mb_substr($receiver_post, 0, 33);
 
         return $this;
     }
@@ -253,7 +255,13 @@ class UpnGenerator
 
     public function setReceiverIban(string $receiver_iban): self
     {
-        $this->receiver_iban = str_replace(' ', '', $receiver_iban);
+        $iban = str_replace(' ', '', $receiver_iban);
+
+        if (strlen($iban) !== 19) {
+            throw new InvalidArgumentException('IBAN must be 19 characters long;');
+        }
+
+        $this->receiver_iban = $iban;
 
         return $this;
     }
@@ -265,7 +273,13 @@ class UpnGenerator
 
     public function setReference(string $reference): self
     {
-        $this->reference = str_replace(' ', '', $reference);
+        $reference = str_replace(' ', '', $reference);
+
+        if (strlen($reference) > 26) {
+            throw new InvalidArgumentException('Max length for reference is 26 char');
+        }
+
+        $this->reference = $reference;
 
         return $this;
     }
@@ -289,6 +303,9 @@ class UpnGenerator
 
     public function setCode(string $code): self
     {
+        if ( strlen($code) !== 4 ) {
+            throw new InvalidArgumentException('CODE must be 4 charatcers');
+        }
         $this->code = strtoupper($code);
 
         return $this;
@@ -301,7 +318,7 @@ class UpnGenerator
 
     public function setPurpose(string $purpose): self
     {
-        $this->purpose = $purpose;
+        $this->purpose = mb_substr($purpose, 0, 42);
 
         return $this;
     }
