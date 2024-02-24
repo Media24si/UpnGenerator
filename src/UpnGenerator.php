@@ -5,7 +5,6 @@ namespace Media24si\UpnGenerator;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\Writer\PngWriter;
 use InvalidArgumentException;
 
 class UpnGenerator
@@ -122,6 +121,7 @@ class UpnGenerator
             ->errorCorrectionLevel(ErrorCorrectionLevel::Medium)
             ->encoding(new Encoding('ISO-8859-2'))
             ->writer(new PngWriter())
+            ->size(400)
             ->build()
             ->getImage();
     }
