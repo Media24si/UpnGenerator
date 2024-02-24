@@ -2,6 +2,10 @@
 
 namespace Media24si\UpnGenerator;
 
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Writer\PngWriter;
 use InvalidArgumentException;
 
 class UpnGenerator
@@ -111,18 +115,15 @@ class UpnGenerator
         return $img;
     }
 
-    public function getQRCode()
+    public function getQRCode(): \GdImage
     {
-        $qrEncoder = \QR_Code\Encoder\Encoder::factory(QR_ECLEVEL_M, 3, 0);
-        $qrEncoder->version = 15;
-
-        $tab = $qrEncoder->encode($this->getQRCodeText());
-
-        return \QR_Code\Encoder\Image::image(
-            $tab,
-            min(max(1, 3), (int) (QR_PNG_MAXIMUM_SIZE / (count($tab)))),
-            0
-        );
+        return Builder::create()
+            ->data($this->getQRCodeText())
+            ->errorCorrectionLevel(ErrorCorrectionLevel::Medium)
+            ->encoding(new Encoding('ISO-8859-2'))
+            ->writer(new PngWriter())
+            ->build()
+            ->getImage();
     }
 
     public function getQRCodeText(): string
