@@ -64,12 +64,12 @@ class UpnGenerator
         $this->writeText(30, 430, $this->receiver_address ?? '', self::FONT_SMALL);
         $this->writeText(30, 455, $this->receiver_post ?? '', self::FONT_SMALL);
 
-        $this->writeText(418, 400, $this->getFormatedReceiverIban() ?? '');
-        $this->writeText(30, 300, $this->getFormatedReceiverIban() ?? '', self::FONT_SMALL);
+        $this->writeText(418, 400, $this->getFormattedReceiverIban() ?? '');
+        $this->writeText(30, 300, $this->getFormattedReceiverIban() ?? '', self::FONT_SMALL);
 
         $this->writeText(418, 451, $this->getReferencePrefix());
         $this->writeText(528, 451, $this->getReferenceSuffix());
-        $this->writeText(30, 351, $this->getFormatedReference(), self::FONT_SMALL);
+        $this->writeText(30, 351, $this->getFormattedReference(), self::FONT_SMALL);
 
         $this->writeText(528, 340, $this->purpose ?? '');
         $this->writeText(30, 165, $this->purpose ?? '', 10);
@@ -77,8 +77,8 @@ class UpnGenerator
         $this->writeText(1155, 340, $this->due_date->format('d.m.Y'));
         $this->writeText(30, 195, $this->due_date->format('d.m.Y'), self::FONT_SMALL);
 
-        $this->writeText(110, 247, '***'.$this->getFormatedPrice(), self::FONT_SMALL);
-        $this->writeText(750, 285, '***'.$this->getFormatedPrice());
+        $this->writeText(110, 247, '***'.$this->getFormattedPrice(), self::FONT_SMALL);
+        $this->writeText(750, 285, '***'.$this->getFormattedPrice());
 
         $this->writeText(418, 340, $this->code ?? '');
 
@@ -155,17 +155,17 @@ class UpnGenerator
         return $text;
     }
 
-    public function getFormatedPrice(): string
+    public function getFormattedPrice(): string
     {
         return number_format($this->amount, 2, ',', '.');
     }
 
-    public function getFormatedReceiverIban(): string
+    public function getFormattedReceiverIban(): string
     {
         return wordwrap($this->receiver_iban, 4, ' ', true);
     }
 
-    public function getFormatedReference(): string
+    public function getFormattedReference(): string
     {
         return $this->getReferencePrefix().' '.$this->getReferenceSuffix();
     }
