@@ -7,34 +7,46 @@ use InvalidArgumentException;
 class UpnGenerator
 {
     private string $payer_name;
+
     private string $payer_address;
+
     private string $payer_post;
 
     private string $receiver_name;
+
     private string $receiver_address;
+
     private string $receiver_post;
+
     private string $receiver_iban;
+
     private string $reference;
 
     private float $amount;
+
     private string $code;
+
     private string $purpose = '';
+
     private \DateTime $due_date;
 
-    private const FONT = __DIR__ . '/courbd.ttf';
+    private const FONT = __DIR__.'/courbd.ttf';
+
     private const FONT_SIZE = 17;
+
     private const FONT_SMALL = 11;
 
-    private $image;
-    private $color;
+    private \GdImage $image;
+
+    private int $color;
 
     public function __construct()
     {
-        $this->image = imagecreatefrompng(__DIR__ . '/upn_sl.png');
+        $this->image = imagecreatefrompng(__DIR__.'/upn_sl.png');
         $this->color = imagecolorallocate($this->image, 0x00, 0x00, 0x00);
     }
 
-    public function gdResource()
+    public function gdResource(): \GdImage
     {
         $this->writeText(697, 170, $this->payer_name ?? '');
         $this->writeText(697, 201, $this->payer_address ?? '');
@@ -65,8 +77,8 @@ class UpnGenerator
         $this->writeText(1155, 340, $this->due_date->format('d.m.Y'));
         $this->writeText(30, 195, $this->due_date->format('d.m.Y'), self::FONT_SMALL);
 
-        $this->writeText(110, 247, '***' . $this->getFormatedPrice(), self::FONT_SMALL);
-        $this->writeText(750, 285, '***' . $this->getFormatedPrice());
+        $this->writeText(110, 247, '***'.$this->getFormatedPrice(), self::FONT_SMALL);
+        $this->writeText(750, 285, '***'.$this->getFormatedPrice());
 
         $this->writeText(418, 340, $this->code ?? '');
 
@@ -108,7 +120,7 @@ class UpnGenerator
 
         return \QR_Code\Encoder\Image::image(
             $tab,
-            min(max(1, 3), (int)(QR_PNG_MAXIMUM_SIZE / (count($tab)))),
+            min(max(1, 3), (int) (QR_PNG_MAXIMUM_SIZE / (count($tab)))),
             0
         );
     }
@@ -118,13 +130,13 @@ class UpnGenerator
         $text = [
             'UPNQR',
             '',
-            '    ',
+            '',
             '',
             '',
             $this->payer_name ?? '',
             $this->payer_address ?? '',
             $this->payer_post ?? '',
-            sprintf('%011d', $this->amount * 100) ?? '',
+            sprintf('%011d', round($this->amount * 100, 2)) ?? '',
             '',
             '',
             $this->code ?? '',
@@ -137,9 +149,8 @@ class UpnGenerator
             $this->receiver_post ?? '',
         ];
 
-        array_walk($text, fn(&$i) => $i = trim($i));
-        $text = implode("\n", $text) . "\n";
-        $text .= mb_strlen($text) . "\n"; // append control code
+        $text = implode("\n", array_map('trim', $text))."\n";
+        $text .= mb_strlen($text)."\n"; // append control code
 
         return $text;
     }
@@ -156,7 +167,7 @@ class UpnGenerator
 
     public function getFormatedReference(): string
     {
-        return $this->getReferencePrefix() . ' ' . $this->getReferenceSuffix();
+        return $this->getReferencePrefix().' '.$this->getReferenceSuffix();
     }
 
     public function getReferencePrefix(): string
@@ -303,7 +314,7 @@ class UpnGenerator
 
     public function setCode(string $code): self
     {
-        if ( strlen($code) !== 4 ) {
+        if (strlen($code) !== 4) {
             throw new InvalidArgumentException('CODE must be 4 charatcers');
         }
         $this->code = strtoupper($code);

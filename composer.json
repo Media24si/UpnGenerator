@@ -13,13 +13,21 @@
     }
   ],
   "require": {
-    "php": "^7.4|^8.0",
+    "php": "^8.1",
     "ext-gd": "*",
     "werneckbh/qr-code": "2.1.*"
+  },
+  "require-dev": {
+    "pestphp/pest": "^2.34"
   },
   "autoload": {
     "psr-4": {
       "Media24si\\UpnGenerator\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
     }
   }
 }
