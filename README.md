@@ -1,5 +1,6 @@
 # Upn Generator
 
+[![Run Tests](https://github.com/Media24si/UpnGenerator/actions/workflows/run-tests.yml/badge.svg)](https://github.com/Media24si/UpnGenerator/actions/workflows/run-tests.yml)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
 # Installation
