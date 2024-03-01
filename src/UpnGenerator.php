@@ -31,7 +31,7 @@ class UpnGenerator
 
     private string $purpose = '';
 
-    private \DateTime $due_date;
+    private ?\DateTime $due_date = null;
 
     private const FONT = __DIR__.'/courbd.ttf';
 
@@ -77,8 +77,10 @@ class UpnGenerator
         $this->writeText(528, 340, $this->purpose ?? '');
         $this->writeText(30, 165, $this->purpose ?? '', 10);
 
-        $this->writeText(1155, 340, $this->due_date->format('d.m.Y'));
-        $this->writeText(30, 195, $this->due_date->format('d.m.Y'), self::FONT_SMALL);
+        if ($this->due_date) {
+            $this->writeText(1155, 340, $this->due_date->format('d.m.Y'));
+            $this->writeText(30, 195, $this->due_date->format('d.m.Y'), self::FONT_SMALL);
+        }
 
         $this->writeText(110, 247, '***'.$this->getFormattedPrice(), self::FONT_SMALL);
         $this->writeText(750, 285, '***'.$this->getFormattedPrice());
@@ -142,7 +144,7 @@ class UpnGenerator
             '',
             $this->code ?? '',
             $this->purpose ?? '',
-            $this->due_date->format('d.m.Y') ?? '',
+            $this->due_date?->format('d.m.Y') ?? '',
             $this->receiver_iban ?? '',
             $this->reference ?? '',
             $this->receiver_name ?? '',
@@ -340,7 +342,7 @@ class UpnGenerator
         return $this->due_date;
     }
 
-    public function setDueDate(\DateTime $due_date): self
+    public function setDueDate(?\DateTime $due_date): self
     {
         $this->due_date = $due_date;
 

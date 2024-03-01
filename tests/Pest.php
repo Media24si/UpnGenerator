@@ -53,5 +53,5 @@ function getDefaultUpn(): \Media24si\UpnGenerator\UpnGenerator
         ->setCode('RENT')
         ->setReference('SI121234567890120')
         ->setPurpose('Plačilo najemnine za marec')
-        ->setDueDate(new DateTime('+1 month'));
+        ->setDueDate(new DateTime('2024-03-24'));
 }

@@ -13,3 +13,12 @@ it('generates same png as snapshot', function () {
 
     expect(md5($png))->toBe(md5_file(__DIR__.'/../snapshots/default.png'));
 });
+
+it('generates GD resource for empty duedate', function () {
+    $upn = getDefaultUpn();
+    $upn->setDueDate(null);
+
+    $gdResource = $upn->gdResource();
+
+    expect($gdResource)->toBeInstanceOf(\GdImage::class);
+});
