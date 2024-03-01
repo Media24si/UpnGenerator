@@ -27,3 +27,12 @@ it('output correct price', function () {
 
     expect($qrCodeContent[8])->toBeString()->toBe('00000003330');
 });
+
+it('sets empty string for empty duedate', function () {
+    $upn = getDefaultUpn();
+    $upn->setDueDate(null);
+
+    $qrCodeContent = explode("\n", $upn->getQRCodeText());
+
+    expect($qrCodeContent[13])->toBeString()->toBe('');
+});
