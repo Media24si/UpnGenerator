@@ -9,9 +9,8 @@ it('generates GD resource', function () {
 });
 
 it('generates same png as snapshot', function () {
-    $png = getDefaultUpn()->png();
-
-    expect(md5($png))->toBe(md5_file(__DIR__.'/../snapshots/default.png'));
+    expect(md5(getDefaultUpn()->png()))
+        ->toMatchSnapshot();
 });
 
 it('generates GD resource for empty duedate', function () {

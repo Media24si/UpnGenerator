@@ -19,14 +19,17 @@ it('trims strings in code', function () {
     expect($qrCodeContent[5])->toBeString()->toBe('Janez Novak');
 });
 
-it('output correct price', function () {
+it('output correct price', function (float $price, string $qrPrice) {
     $upn = getDefaultUpn();
-    $upn->setAmount(33.30);
+    $upn->setAmount($price);
 
     $qrCodeContent = explode("\n", $upn->getQRCodeText());
 
-    expect($qrCodeContent[8])->toBeString()->toBe('00000003330');
-});
+    expect($qrCodeContent[8])->toBeString()->toBe($qrPrice);
+})->with([
+    [33.30, '00000003330'],
+    [19.99, '00000001999'],
+]);
 
 it('sets empty string for empty duedate', function () {
     $upn = getDefaultUpn();

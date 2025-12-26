@@ -99,7 +99,6 @@ class UpnGenerator
 
         header('Content-Type: image/png');
         imagepng($image);
-        imagedestroy($image);
     }
 
     public function png(): string
@@ -111,20 +110,18 @@ class UpnGenerator
         $img = ob_get_contents();
         ob_end_clean();
 
-        imagedestroy($image);
-
         return $img;
     }
 
     public function getQRCode(): \GdImage
     {
-        return Builder::create()
-            ->data($this->getQRCodeText())
-            ->errorCorrectionLevel(ErrorCorrectionLevel::Medium)
-            ->encoding(new Encoding('ISO-8859-2'))
-            ->writer(new PngWriter())
-            ->size(400)
-            ->build()
+        return new Builder(
+                data: $this->getQRCodeText(),
+                errorCorrectionLevel: ErrorCorrectionLevel::Medium,
+                writer: new \Endroid\QrCode\Writer\PngWriter(),
+                encoding: new Encoding('ISO-8859-2'),
+                size: 400,
+            )->build()
             ->getImage();
     }
 
